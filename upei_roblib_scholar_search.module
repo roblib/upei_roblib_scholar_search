@@ -1,0 +1,64 @@
+<?php
+
+/**
+ * @file
+ * Implementation of custom search functionality for UPEIs islandora_scholar.
+ */
+
+/**
+ * Implements hook_islandora_solr_primary_display().
+ */
+function upei_roblib_scholar_search_islandora_solr_primary_display() {
+  return array(
+    'custom' => array(
+      'name' => t('UPEI Custom'),
+      'module' => 'upei_roblib_scholar_search',
+      'file' => 'includes/custom_results.inc',
+      'class' => "IslandoraSolrResultsCustom",
+      'function' => "displayResults",
+      'description' => t("Custom Display of search results for UPEIs isandora_scholar"),
+    ),
+  );
+}
+
+/**
+ * Implements hook_theme().
+ */
+function upei_roblib_scholar_search_theme() {
+  $path = drupal_get_path('module', 'upei_roblib_scholar_search');
+
+  return array(
+    'upei_roblib_scholar_search_custom' => array(
+      'path' => $path . '/theme',
+      'template' => 'upei-roblib-scholar-search',
+      'variables' => array('results' => NULL, 'elements' => array()),
+    ),
+  );
+}
+
+/**
+ * Prepares variables for search result template.
+ *
+ */
+function upei_roblib_scholar_search_preprocess_upei_roblib_scholar_search_custom(&$variables) {
+  $results = $variables['results'];
+  foreach ($results as $key => $result) {
+    // Thumbnail.
+    $path = url($result['thumbnail_url'], array('query' => $result['thumbnail_url_params']));
+    $image = theme('image', array('path' => $path));
+
+    $options = array('html' => TRUE);
+    if (isset($result['object_label'])) {
+      $options['attributes']['title'] = $result['object_label'];
+    }
+    if (isset($result['object_url_params'])) {
+      $options['query'] = $result['object_url_params'];
+    }
+    if (isset($result['object_url_fragment'])) {
+      $options['fragment'] = $result['object_url_fragment'];
+    }
+    // Thumbnail link.
+    $variables['results'][$key]['thumbnail'] = l($image, $result['object_url'], $options);
+  }
+}
+

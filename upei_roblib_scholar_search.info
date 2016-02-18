@@ -1,0 +1,5 @@
+name = UPEI Roblib Scholar Search
+description = Customised search results for UPEIs islandora_scholar module
+package = Roblib
+version = 7.x-dev
+core = 7.x
