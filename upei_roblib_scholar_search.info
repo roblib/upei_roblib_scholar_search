@@ -1,5 +1,6 @@
 name = UPEI Roblib Scholar Search
 description = Customised search results for UPEIs islandora_scholar module
 package = Roblib
+dependencies[] = islandora_solr
 version = 7.x-dev
 core = 7.x
