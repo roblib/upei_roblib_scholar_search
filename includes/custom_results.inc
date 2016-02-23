@@ -59,6 +59,11 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
       else {
         $result['full_text_url'] = '';
       }
+      $id_for_form = upei_roblib_scholar_search_escape_pid($result['PID']);
+      // we need to make the form ids unique, we then use hook_forms to map them to a real form id (because the form appears muliple times on one page).
+      $bookmark_form = drupal_get_form('upei_roblib_scholar_search_bookmark_form_' . $id_for_form, $result['PID']);
+      //$bookmark_form = drupal_get_form('upei_roblib_scholar_search_bookmark_form', $result['PID']);
+      $result['roblib_bookmark_form'] = drupal_render($bookmark_form);
     }
   }
 

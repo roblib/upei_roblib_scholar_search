@@ -33,6 +33,10 @@
               <?php print $result['full_text_url']; ?>
             </dt>
             <dd></dd>
+            <dt class="solr-label roblib-bookmark-form">
+              <?php print $result['roblib_bookmark_form']; ?>
+            </dt>
+            <dd></dd>
           </dl>
           <!-- Metadata -->
           <dl class="solr-fields islandora-inline-metadata">
@@ -44,6 +48,7 @@
                 <?php print $value['value']; ?>
               </dd>
             <?php endforeach; ?>
+
           </dl>
 
         </div>
