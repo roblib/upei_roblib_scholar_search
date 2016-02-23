@@ -63,15 +63,6 @@ function upei_roblib_scholar_search_preprocess_upei_roblib_scholar_search_custom
   }
 }
 
-/*function upei_roblib_scholar_search_form_alter(&$form, &$form_state, $form_id){
-  if (substr($form_id, 0, 49) == 'islandora_bookmark_fedora_repository_object_form_') {
-    //$form['#tree'] = TRUE;
-    $form['islandora_bookmark']['add_button']['#ajax']['callback'] = 'roblib_bookmark_add_pid';
-    $form_state['cache'] = TRUE;
-  }
-}      */
-
-
 
 /**
  * Creates a form to display which Bookmarks a Fedora object belongs to.
@@ -80,8 +71,8 @@ function upei_roblib_scholar_search_preprocess_upei_roblib_scholar_search_custom
  *
  * we've highjacked the islandora bookmark repository object form so that
  * each element can be wrapped by it's pid (so we can have multiple forms on the same
- * page).  Altering the original form may have been an option as well but we are basically
- *rewriting it so thought a new form made more sense.
+ * page with different class ids).  Altering the original form may have been
+ * an option as well but we are basically rewriting the whole form so a new form made sense.
  *
  * @param array $form
  *   The Drupal form definition.
@@ -97,14 +88,14 @@ function upei_roblib_scholar_search_bookmark_form(array $form, array &$form_stat
   global $user;
   module_load_include('inc', 'islandora_bookmark', 'includes/api');
   //in case we are rebuilding the form load the pid
-  if(empty($pid) && !empty($form_state['islandora_bookmark_pid'])){
-    $pid = $form_state['islandora_bookmark_pid'];
+  if (empty($pid) && !empty($form_state['upei_roblib_scholar_search_bookmark_pid'])) {
+    $pid = $form_state['upei_roblib_scholar_search_bookmark_pid'];
   }
   $id_for_form = upei_roblib_scholar_search_escape_pid($pid);
   $containing_lists = islandora_bookmark_get_bookmarks_visible_to_user($pid, $user->uid);
 
   $form = array(
-    '#prefix' => '<div id="islandora-bookmark-' . $id_for_form .'">',
+    '#prefix' => '<div id="upei-roblib-scholar-search-bookmark-' . $id_for_form . '">',
     '#suffix' => '</div>',
   );
   $form['#tree'] = TRUE;
@@ -116,7 +107,7 @@ function upei_roblib_scholar_search_bookmark_form(array $form, array &$form_stat
       $links[] = l($bookmark_object->bookmarkName, 'islandora-bookmark/listid/' . $bookmark_object->getId());
     }
 
-    $form['islandora_bookmark']['lists'][$id_for_form] = array(
+    $form['upei_roblib_scholar_search_bookmark']['lists'][$id_for_form] = array(
       '#type' => 'item',
       '#prefix' => '<div class="upei-roblib-scholar-search-bookmark">' . t('Bookmarked in') . ':</div>',
       '#markup' => theme('item_list', array('items' => $links)),
@@ -138,29 +129,28 @@ function upei_roblib_scholar_search_bookmark_form(array $form, array &$form_stat
       }
       if (user_access('use islandora_bookmark')) {
         if (!count($containing_lists)) {
-          $form['islandora_bookmark']['title'][$id_for_form] = array(
+          $form['upei_roblib_scholar_search_bookmark']['title'][$id_for_form] = array(
             '#markup' => '<div class="upei-roblib-scholar-search-bookmark">' . t('@type', array('@type' => ucwords(variable_get('islandora_bookmark_type', 'bookmark')))) . 's:</div>',
           );
         }
-        $form['islandora_bookmark']['add_bookmarks'][$id_for_form] = array(
+        $form['upei_roblib_scholar_search_bookmark']['add_bookmarks'][$id_for_form] = array(
           '#type' => 'select',
           '#options' => $options,
         );
-        $form['islandora_bookmark']['add_button'][$id_for_form] = array(
+        $form['upei_roblib_scholar_search_bookmark']['add_button'][$id_for_form] = array(
           '#type' => 'submit',
           '#value' => t('Add to @type', array('@type' => variable_get('islandora_bookmark_type', 'bookmark'))),
           '#ajax' => array(
             'event' => 'click',
             'callback' => 'upei_roblib_scholar_search_bookmark_add_pid',
-            'wrapper' => 'islandora-bookmark-' . $id_for_form,
+            'wrapper' => 'upei-roblib-scholar-search-bookmark-' . $id_for_form,
             'method' => 'replace',
           ),
         );
       }
     }
   }
-  $form_state['islandora_bookmark_pid'] = $pid;
-
+  $form_state['upei_roblib_scholar_search_bookmark_pid'] = $pid;
   return $form;
 }
 
@@ -168,12 +158,12 @@ function upei_roblib_scholar_search_bookmark_form(array $form, array &$form_stat
  * Form validation callback.
  */
 function upei_roblib_scholar_search_bookmark_form_validate(&$form, &$form_state) {
-  $pid = $form_state['islandora_bookmark_pid'];
+  $pid = $form_state['upei_roblib_scholar_search_bookmark_pid'];
   $id_for_form = upei_roblib_scholar_search_escape_pid($pid);
-  $key = $form_state['values']['islandora_bookmark']['add_bookmarks'][$id_for_form];
+  $key = $form_state['values']['upei_roblib_scholar_search_bookmark']['add_bookmarks'][$id_for_form];
   if ($key == 'default') {
     $object = islandora_object_load($pid);
-    form_set_error('islandora_bookmark][add_bookmarks', t('Please select a list to bookmark @label.', array(
+    form_set_error('upei_roblib_scholar_search_bookmark][add_bookmarks]', t('Please select a list to bookmark @label.', array(
       '@label' => $object->label,
     )));
   }
@@ -195,21 +185,15 @@ function upei_roblib_scholar_search_bookmark_add_pid(array $form, array &$form_s
 
   if (count($errors) === 0) {
     module_load_include('inc', 'islandora_bookmark', 'includes/api');
-    $pid = $form_state['islandora_bookmark_pid'];
+    $pid = $form_state['upei_roblib_scholar_search_bookmark_pid'];
     $id_for_form = upei_roblib_scholar_search_escape_pid($pid);
-    $key = $form_state['values']['islandora_bookmark']['add_bookmarks'][$id_for_form];
+    $key = $form_state['values']['upei_roblib_scholar_search_bookmark']['add_bookmarks'][$id_for_form];
     $object = islandora_object_load($pid);
 
     $bookmark_object = islandora_bookmark_get_bookmark_by_number($key);
 
     try {
       $bookmark_object->addPids(array($pid));
-      /*drupal_set_message(t('The object @label has been bookmarked in @listname.',
-        array(
-          '@listname' => $bookmark_object->bookmarkName,
-          '@label' => $object->label,
-        )
-      ));    */
     }
     catch (Exception $e) {
       drupal_set_message($e->getMessage(), 'error');
@@ -224,15 +208,21 @@ function upei_roblib_scholar_search_bookmark_add_pid(array $form, array &$form_s
   }
 }
 
-function upei_roblib_scholar_search_escape_pid($pid){
+/**
+ * replace the colon with a dash so the value can be used in a class id.
+ *
+ * @param string $pid
+ * @return mixed
+ */
+function upei_roblib_scholar_search_escape_pid($pid) {
   return $id_for_form = str_replace(':', '-', $pid);
 }
 
 /**
  * Implements hook_forms().
  *
- * Allows the bookmark add pid form to be repeated multiple times on a page.
- * See http://drupal.org/node/1970846.
+ * Allows the upei_roblib_scholar_search_bookmark_form to be repeated
+ * multiple times on one page with different ids.
  */
 function upei_roblib_scholar_search_forms($form_id, $args) {
   $forms = array();
