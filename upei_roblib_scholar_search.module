@@ -163,9 +163,7 @@ function upei_roblib_scholar_search_bookmark_form_validate(&$form, &$form_state)
   $key = $form_state['values']['upei_roblib_scholar_search_bookmark']['add_bookmarks'][$id_for_form];
   if ($key == 'default') {
     $object = islandora_object_load($pid);
-    form_set_error('upei_roblib_scholar_search_bookmark][add_bookmarks]', t('Please select a list to bookmark @label.', array(
-      '@label' => $object->label,
-    )));
+    form_set_error('upei_roblib_scholar_search_bookmark][add_bookmarks]', t('Please select a list below.'));
   }
 }
 
@@ -188,7 +186,6 @@ function upei_roblib_scholar_search_bookmark_add_pid(array $form, array &$form_s
     $pid = $form_state['upei_roblib_scholar_search_bookmark_pid'];
     $id_for_form = upei_roblib_scholar_search_escape_pid($pid);
     $key = $form_state['values']['upei_roblib_scholar_search_bookmark']['add_bookmarks'][$id_for_form];
-    $object = islandora_object_load($pid);
 
     $bookmark_object = islandora_bookmark_get_bookmark_by_number($key);
 
