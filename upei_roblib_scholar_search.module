@@ -162,7 +162,6 @@ function upei_roblib_scholar_search_bookmark_form_validate(&$form, &$form_state)
   $id_for_form = upei_roblib_scholar_search_escape_pid($pid);
   $key = $form_state['values']['upei_roblib_scholar_search_bookmark']['add_bookmarks'][$id_for_form];
   if ($key == 'default') {
-    $object = islandora_object_load($pid);
     form_set_error('upei_roblib_scholar_search_bookmark][add_bookmarks]', t('Please select a list below.'));
   }
 }

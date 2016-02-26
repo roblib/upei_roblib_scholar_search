@@ -36,6 +36,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     $elements['solr_total'] = $solr_results['response']['numFound'];
     $elements['solr_start'] = $solr_results['response']['start'];
 
+
     return theme('upei_roblib_scholar_search_custom', array(
       'results' => $object_results,
       'elements' => $elements,
@@ -45,7 +46,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
   /**
    * Creates a bookmark form and a full text link.
    *
-   * Currently checks the mods_location_url_s field for the full text (this may change).
+   * Currently checks the list of datastreams from solr to see if PDF exists to create the full text.
    *
    * @param array $solr_result
    */
@@ -53,15 +54,11 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     // TODO We may want to make the base_url configurable in case we ever change resolvers.
     $results = &$solr_result['response']['objects'];
     foreach ($results as &$result) {
-      if (!empty($result['solr_doc']['mods_location_url_s'])) {
+      if (in_array('PDF', $result['datastreams'])) {
         $options['html'] = TRUE;
         $options['attributes']['title'] = 'Full Text';
-        // TODO we will probably want the list of datastreams so we can make a more informed decision here
-        // waiting for feedback from library on whether or not we will load a citation for each search result
-        // if we are then we will have to get the mods anyway so we can check for datastreams on the object
-        // if we don't need the citations than i can include the datastream solr fields and use them
-        // (we'll have to suppres them from the view though)
-        $result['full_text_url'] = l(t("Full Text"), $result['solr_doc']['mods_location_url_s'], $options);
+        $result['full_text_url'] = l(t("Full Text"), '/islandora/object/' .
+          $result['PID'] . '/datastream/PDF/download', $options);
       }
       else {
         $result['full_text_url'] = '';
