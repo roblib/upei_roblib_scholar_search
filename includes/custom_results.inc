@@ -29,6 +29,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     $solr_results = islandora_solr_prepare_solr_results($solr_results);
     $object_results = $solr_results['response']['objects'];
     $object_results = islandora_solr_prepare_solr_doc($object_results);
+    $this->replaceCommaWithSemicolon($object_results);
     $mod_path = drupal_get_path('module', 'islandora_solr_config');
     drupal_add_css("$mod_path/css/islandora_solr_config.theme.css");
 
@@ -67,6 +68,26 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
       // we need to make the form ids unique, we then use hook_forms to map them to a real form id (because the form appears muliple times on one page).
       $bookmark_form = drupal_get_form('upei_roblib_scholar_search_bookmark_form_' . $id_for_form, $result['PID']);
       $result['roblib_bookmark_form'] = drupal_render($bookmark_form);
+      //$this->replaceCommaWithSemicolon($result);
+    }
+  }
+
+  /**
+   * Replace the comma separator between authors, advisors, creators etc with a semi colon.
+   *
+   * @param array $results
+   */
+  function replaceCommaWithSemicolon(&$results){
+    foreach($results as &$result){
+      foreach($result['solr_doc'] as $key => &$field){
+        if(strpos($key, '_lastname_first_' )){
+          $field['value'] = preg_replace('/(.+?),(.+?),/', '$1,$2;', $field['value']);
+          // we have mods that have multiple empty advisor fields
+          if(trim($field['value']) === ','){
+            $field['value'] = '';
+          }
+        }
+      }
     }
   }
 
@@ -94,7 +115,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     $img = theme('image', $img_variables);
     foreach ($results as &$result) {
       $genre = empty($result['solr_doc']['mods_genre_s']) ? NULL : $result['solr_doc']['mods_genre_s'];
-      if (!empty($genre)) {
+      if (!empty($genre) && !(in_array('PDF', $result['datastreams']))) {
         if (stripos((string) $genre, 'book') !== FALSE && !empty($result['solr_doc']['mods_identifier_isbn_s'])) {
           $options = $this->createCoinsUrlForBook($result);
         }
