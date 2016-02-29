@@ -23,7 +23,6 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
    *   Rendered Solr results.
    */
   public function printResults($solr_results) {
-    // create the coins url before islandora_solr modifies values like title (in case title is configured to be used as a link etc.).
     $this->createCoinsUrlForResults($solr_results);
     $this->createBookmarkAndTextLink($solr_results);
     $solr_results = islandora_solr_prepare_solr_results($solr_results);
@@ -68,7 +67,6 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
       // we need to make the form ids unique, we then use hook_forms to map them to a real form id (because the form appears muliple times on one page).
       $bookmark_form = drupal_get_form('upei_roblib_scholar_search_bookmark_form_' . $id_for_form, $result['PID']);
       $result['roblib_bookmark_form'] = drupal_render($bookmark_form);
-      //$this->replaceCommaWithSemicolon($result);
     }
   }
 
@@ -77,13 +75,13 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
    *
    * @param array $results
    */
-  function replaceCommaWithSemicolon(&$results){
-    foreach($results as &$result){
-      foreach($result['solr_doc'] as $key => &$field){
-        if(strpos($key, '_lastname_first_' )){
+  static function replaceCommaWithSemicolon(&$results) {
+    foreach ($results as &$result) {
+      foreach ($result['solr_doc'] as $key => &$field) {
+        if (strpos($key, '_lastname_first_')) {
           $field['value'] = preg_replace('/(.+?),(.+?),/', '$1,$2;', $field['value']);
           // we have mods that have multiple empty advisor fields
-          if(trim($field['value']) === ','){
+          if (trim($field['value']) === ',') {
             $field['value'] = '';
           }
         }
@@ -110,8 +108,8 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
       'path' => 'http://library.upei.ca/sites/all/files/sharedfolder/files/getit_upei.gif',
       'alt' => 'Get it at UPEI',
       'title' => 'Get it at UPEI',
-      'attributes' => array('class' => 'coins-img',),
-    );
+      'attributes' => array('class' => 'coins-img', ),
+      );
     $img = theme('image', $img_variables);
     foreach ($results as &$result) {
       $genre = empty($result['solr_doc']['mods_genre_s']) ? NULL : $result['solr_doc']['mods_genre_s'];
