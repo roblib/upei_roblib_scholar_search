@@ -73,6 +73,9 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
   /**
    * Replace the comma separator between authors, advisors, creators etc with a semi colon.
    *
+   * This method may fail on records with authors that only have one name
+   * (missing lastname or missing firstname).  Names that have a comma in them may also cause issues.
+   *
    * @param array $results
    */
   static function replaceCommaWithSemicolon(&$results) {
@@ -100,7 +103,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
    *
    * @param $pid
    */
-  function createCoinsUrlForResults(&$solr_result) {
+  static function createCoinsUrlForResults(&$solr_result) {
     // TODO We may want to make the base_url configurable in case we ever change resolvers.
     $coins_base_url = 'http://articles.library.upei.ca:7888/godot/hold_tab.cgi';
     $results = &$solr_result['response']['objects'];
@@ -115,17 +118,16 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
       $genre = empty($result['solr_doc']['mods_genre_s']) ? NULL : $result['solr_doc']['mods_genre_s'];
       if (!empty($genre) && !(in_array('PDF', $result['datastreams']))) {
         if (stripos((string) $genre, 'book') !== FALSE && !empty($result['solr_doc']['mods_identifier_isbn_s'])) {
-          $options = $this->createCoinsUrlForBook($result);
+          $options = IslandoraSolrResultsCustom::createCoinsUrlForBook($result);
         }
         elseif ($genre == 'Journal Article') {
-          $options = $this->createCoinsUrlForJournalArticle($result);
+          $options = IslandoraSolrResultsCustom::createCoinsUrlForJournalArticle($result);
         }
         else {
-          $options = $this->createCoinsUrlForOther($result);
+          $options = IslandoraSolrResultsCustom::createCoinsUrlForOther($result);
         }
         $options['query']['hold_tab_branch'] = 'PCU';
         $options['html'] = TRUE;
-        $options['attributes']['title'] = $result['object_label'];
         $result['coins_url'] = l($img, $coins_base_url, $options);
       }
       else {
@@ -134,7 +136,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     }
   }
 
-  function createCoinsUrlForBook($result) {
+  static function createCoinsUrlForBook($result) {
     $options['query']['isbn'] = $result['solr_doc']['mods_identifier_isbn_s'];
     if (!empty($result['solr_doc']['mods_titleInfo_title_s'])) {
       $options['query']['title'] = $result['solr_doc']['mods_titleInfo_title_s'];
@@ -145,7 +147,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     return $options;
   }
 
-  function createCoinsUrlForJournalArticle($result) {
+  static function createCoinsUrlForJournalArticle($result) {
     if (!empty($result['solr_doc']['mods_identifier_issn_s'])) {
       $options['query']['issn'] = $result['solr_doc']['mods_identifier_issn_s'];
     }
@@ -167,7 +169,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     return $options;
   }
 
-  function createCoinsUrlForOther($result) {
+  static function createCoinsUrlForOther($result) {
     if (!empty($result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'])) {
       $options['query']['date'] = $result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'];
     }

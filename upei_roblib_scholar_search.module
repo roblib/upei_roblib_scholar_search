@@ -65,6 +65,34 @@ function upei_roblib_scholar_search_preprocess_upei_roblib_scholar_search_custom
 
 
 /**
+ * implement the solr metadata display modules processor we can add the coins url to the
+ * variables array.
+ *
+ * @param array $variables
+ * @return array
+ */
+function upei_roblib_scholar_search_process_islandora_solr_metadata_display(array &$variables) {
+  // mimic solr search results array so we can use the same functions to generate the coins url
+  $results_arr = array();
+  $results_arr['response']['objects'][0]['solr_doc'] = array();
+  foreach ($variables['solr_fields'] as $field) {
+    $field_name = $field['solr_field'];
+    $value = implode(',', $field['value']);
+    // in case the field is configured as a link
+    $value = preg_replace('/<a href=\"(.*?)\">(.*?)<\/a>/', "\\2", $value);
+    $results_arr['response']['objects'][0]['solr_doc'][$field_name] = $value;
+  }
+  $object = $variables['islandora_object'];
+  foreach($object as $datastream){
+    $results_arr['response']['objects'][0]['datastreams'][] = $datastream->id;
+  }
+
+  IslandoraSolrResultsCustom::createCoinsUrlForResults($results_arr);
+  $variables['coins_url'] = $results_arr['response']['objects'][0]['coins_url'];
+}
+
+
+/**
  * Creates a form to display which Bookmarks a Fedora object belongs to.
  *
  * Also, gives the ability to add the object to a Bookmark.
