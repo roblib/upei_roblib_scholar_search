@@ -86,10 +86,34 @@ function upei_roblib_scholar_search_process_islandora_solr_metadata_display(arra
   foreach($object as $datastream){
     $results_arr['response']['objects'][0]['datastreams'][] = $datastream->id;
   }
-
   IslandoraSolrResultsCustom::createCoinsUrlForResults($results_arr);
   $variables['coins_url'] = $results_arr['response']['objects'][0]['coins_url'];
 }
+
+/**
+ * This hook allows modules to register XSLT self-transformations.
+ *
+ * @return array
+ *   An associative array mapping a shortened name to the full path of the
+ *   transformation.
+ */
+function upei_roblib_scholar_search_xml_form_builder_get_self_transforms() {
+  return array(
+    'upei_cleanup_and_order_mads.xsl' => drupal_get_path('module', 'upei_roblib_scholar_search') . '/xml/upei_cleanup_and_order_mads.xsl',
+  );
+}
+
+/**
+ * Implements hook_islandora_xml_form_builder_get_transforms().
+ */
+function upei_roblib_scholar_search_xml_form_builder_get_transforms() {
+  $module_path = drupal_get_path('module', 'upei_roblib_scholar_search');
+  return array(
+    'upei_mads_to_dc.xsl' => "$module_path/xml/upei_mads_to_dc.xsl",
+  );
+}
+
+
 
 
 /**
