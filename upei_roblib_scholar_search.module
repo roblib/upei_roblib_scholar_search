@@ -45,8 +45,15 @@ function upei_roblib_scholar_search_preprocess_upei_roblib_scholar_search_custom
   $results = $variables['results'];
   foreach ($results as $key => $result) {
     // Thumbnail.
+    $type = empty($result['solr_doc']['mods_genre_s']['value']) ? 'scholar-undefined' :
+      'scholar-' . str_replace(array(' ', ':', ','), '-', $result['solr_doc']['mods_genre_s']['value']);
+    if((strpos($result['thumbnail_url'], 'defaultimg.png', strlen($result['thumbnail_url']) - strlen('defaultimg.png')) !== false)){
+      $attributes = array('class' => 'islandora-solr-default-image ' . $type);
+    } else {
+      $attributes = array('class' => 'islandora-derivative-image ' . $type);
+    }
     $path = url($result['thumbnail_url'], array('query' => $result['thumbnail_url_params']));
-    $image = theme('image', array('path' => $path));
+    $image = theme('image', array('path' => $path, 'attributes' => $attributes));
 
     $options = array('html' => TRUE);
     if (isset($result['object_label'])) {
@@ -58,6 +65,7 @@ function upei_roblib_scholar_search_preprocess_upei_roblib_scholar_search_custom
     if (isset($result['object_url_fragment'])) {
       $options['fragment'] = $result['object_url_fragment'];
     }
+
     // Thumbnail link.
     $variables['results'][$key]['thumbnail'] = l($image, $result['object_url'], $options);
   }
