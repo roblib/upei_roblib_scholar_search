@@ -3,6 +3,7 @@ description = Customised search results for UPEIs islandora_scholar module
 package = Roblib
 dependencies[] = islandora_solr
 dependencies[] = islandora_bookmark
+dependencies[] = islandora_usage_stats_callbacks
 files[] = includes/custom_results.inc
 version = 7.x-dev
 core = 7.x
