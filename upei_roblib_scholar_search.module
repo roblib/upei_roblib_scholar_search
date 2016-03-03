@@ -94,10 +94,10 @@ function upei_roblib_scholar_search_process_islandora_solr_metadata_display(arra
   foreach($object as $datastream){
     $results_arr['response']['objects'][0]['datastreams'][] = $datastream->id;
   }
-  $usage = islandora_usage_stats_callbacks_get_object_stats($object->id, FALSE);
-  // TODO we may want to enhance the usage callbacks module to return just a count
-  $variables['upei_scholar_views'] = count($usage['views']);
-  $variables['upei_scholar_downloads'] = count($usage['downloads']);
+  module_load_include('inc', 'islandora_usage_stats', 'includes/db');
+  $variables['upei_scholar_views'] = islandora_usage_stats_get_individual_object_view_count($object->id);
+  $downloads =  islandora_usage_stats_get_datastream_downloads_count($object->id, 'PDF');
+  $variables['upei_scholar_downloads'] = empty($downloads) ? '0' : $downloads['PDF'];
   IslandoraSolrResultsCustom::createCoinsUrlForResults($results_arr);
   $variables['coins_url'] = $results_arr['response']['objects'][0]['coins_url'];
 }
