@@ -100,6 +100,31 @@ function upei_roblib_scholar_search_process_islandora_solr_metadata_display(arra
   $variables['upei_scholar_downloads'] = empty($downloads) ? '0' : $downloads['PDF'];
   IslandoraSolrResultsCustom::createCoinsUrlForResults($results_arr);
   $variables['coins_url'] = $results_arr['response']['objects'][0]['coins_url'];
+  // Replace machine readable position with human readable.
+  if(!empty($variables['solr_fields']['MADS_position_ms'])) {
+    $positions_arr = mads_positions_array();
+     foreach($variables['solr_fields']['MADS_position_ms']['value'] as &$value){
+       if(in_array($value, array_keys($positions_arr))) {
+         $value = $positions_arr[$value];
+       }
+     }
+  }
+}
+
+function mads_positions_array(){
+  $positions = array(
+    'EmeritusFaculty' => 'Emeritus Faculty',
+    'EmeritusLibrarian' => 'Emeritus Librarian'
+  ,
+    'EmeritusProfessor' => 'Emeritus Professor',
+    'FacultyMember' => 'Faculty Member'
+  ,
+    'NonAcademic' => 'Non-Academic',
+    'GraduateStudent' => 'Graduate Student'
+  ,
+    'UndergraduateStudent' => 'Undergraduate Student'
+  );
+  return $positions;
 }
 
 /**
