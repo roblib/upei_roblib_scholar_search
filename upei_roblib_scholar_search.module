@@ -46,14 +46,22 @@ function upei_roblib_scholar_search_preprocess_upei_roblib_scholar_search_custom
   foreach ($results as $key => $result) {
     // Thumbnail.
     $type = empty($result['solr_doc']['mods_genre_s']['value']) ? 'scholar-undefined' :
-      'scholar-' . str_replace(array(' ', ':', ','), '-', $result['solr_doc']['mods_genre_s']['value']);
-    if((strpos($result['thumbnail_url'], 'defaultimg.png', strlen($result['thumbnail_url']) - strlen('defaultimg.png')) !== false)){
+      'scholar-' . str_replace(array(
+        ' ',
+        ':',
+        ','
+      ), '-', $result['solr_doc']['mods_genre_s']['value']);
+    if ((strpos($result['thumbnail_url'], 'defaultimg.png', strlen($result['thumbnail_url']) - strlen('defaultimg.png')) !== FALSE)) {
       $attributes = array('class' => 'islandora-solr-default-image ' . $type);
-    } else {
+    }
+    else {
       $attributes = array('class' => 'islandora-derivative-image ' . $type);
     }
     $path = url($result['thumbnail_url'], array('query' => $result['thumbnail_url_params']));
-    $image = theme('image', array('path' => $path, 'attributes' => $attributes));
+    $image = theme('image', array(
+      'path' => $path,
+      'attributes' => $attributes
+    ));
 
     $options = array('html' => TRUE);
     if (isset($result['object_label'])) {
@@ -91,27 +99,39 @@ function upei_roblib_scholar_search_process_islandora_solr_metadata_display(arra
     $results_arr['response']['objects'][0]['solr_doc'][$field_name] = $value;
   }
   $object = $variables['islandora_object'];
-  foreach($object as $datastream){
+  foreach ($object as $datastream) {
     $results_arr['response']['objects'][0]['datastreams'][] = $datastream->id;
   }
   module_load_include('inc', 'islandora_usage_stats', 'includes/db');
-  $variables['upei_scholar_views'] = islandora_usage_stats_get_individual_object_view_count($object->id);
-  $downloads =  islandora_usage_stats_get_datastream_downloads_count($object->id, 'PDF');
-  $variables['upei_scholar_downloads'] = empty($downloads) ? '0' : $downloads['PDF'];
+  // only show stats for theses or citations
+  if (count(array_intersect($object->models, array(
+      'ir:thesisCModel',
+      'ir:citationCModel'
+    ))) > 0
+  ) {
+    $variables['upei_scholar_views'] = islandora_usage_stats_get_individual_object_view_count($object->id);
+    $downloads = islandora_usage_stats_get_datastream_downloads_count($object->id, 'PDF');
+    $variables['upei_scholar_downloads'] = empty($downloads) ? '0' : $downloads['PDF'];
+  }
   IslandoraSolrResultsCustom::createCoinsUrlForResults($results_arr);
   $variables['coins_url'] = $results_arr['response']['objects'][0]['coins_url'];
   // Replace machine readable position with human readable.
-  if(!empty($variables['solr_fields']['MADS_position_ms'])) {
+  if (!empty($variables['solr_fields']['MADS_position_ms'])) {
     $positions_arr = mads_positions_array();
-     foreach($variables['solr_fields']['MADS_position_ms']['value'] as &$value){
-       if(in_array($value, array_keys($positions_arr))) {
-         $value = $positions_arr[$value];
-       }
-     }
+    foreach ($variables['solr_fields']['MADS_position_ms']['value'] as &$value) {
+      if (in_array($value, array_keys($positions_arr))) {
+        $value = $positions_arr[$value];
+      }
+    }
   }
 }
 
-function mads_positions_array(){
+/**
+ * Create an array of machine readable to human readable positions.
+ *
+ * @return array
+ */
+function mads_positions_array() {
   $positions = array(
     'EmeritusFaculty' => 'Emeritus Faculty',
     'EmeritusLibrarian' => 'Emeritus Librarian'
@@ -149,8 +169,6 @@ function upei_roblib_scholar_search_xml_form_builder_get_transforms() {
     'upei_mads_to_dc.xsl' => "$module_path/xml/upei_mads_to_dc.xsl",
   );
 }
-
-
 
 
 /**
