@@ -5,6 +5,7 @@
  * Implementation of custom search functionality for UPEIs islandora_scholar.
  */
 
+define('DOI_BASE_URL', 'http://doi.org/');
 /**
  * Implements hook_islandora_solr_primary_display().
  */
@@ -45,6 +46,7 @@ function upei_roblib_scholar_search_preprocess_upei_roblib_scholar_search_custom
   $results = $variables['results'];
   foreach ($results as $key => $result) {
     // Thumbnail.
+    // Add some classes so we can theme default thumbnails by genre
     $type = empty($result['solr_doc']['mods_genre_s']['value']) ? 'scholar-undefined' :
       'scholar-' . str_replace(array(
         ' ',
@@ -124,6 +126,12 @@ function upei_roblib_scholar_search_process_islandora_solr_metadata_display(arra
       }
     }
   }
+  if(!empty($variables['solr_fields']['mods_identifier_doi_s']) &&
+  !empty($variables['solr_fields']['mods_identifier_doi_s']['value'][0])){
+    $doi = $variables['solr_fields']['mods_identifier_doi_s']['value'][0];
+    $variables['solr_fields']['mods_identifier_doi_s']['value'][0] =
+      l($doi, DOI_BASE_URL . $doi);
+  }
 }
 
 /**
@@ -134,15 +142,13 @@ function upei_roblib_scholar_search_process_islandora_solr_metadata_display(arra
 function mads_positions_array() {
   $positions = array(
     'EmeritusFaculty' => 'Emeritus Faculty',
-    'EmeritusLibrarian' => 'Emeritus Librarian'
-  ,
+    'EmeritusLibrarian' => 'Emeritus Librarian',
+    'EmeritusPresident' => 'Emeritus President',
     'EmeritusProfessor' => 'Emeritus Professor',
-    'FacultyMember' => 'Faculty Member'
-  ,
+    'FacultyMember' => 'Faculty Member',
     'NonAcademic' => 'Non-Academic',
-    'GraduateStudent' => 'Graduate Student'
-  ,
-    'UndergraduateStudent' => 'Undergraduate Student'
+    'GraduateStudent' => 'Graduate Student',
+    'UndergraduateStudent' => 'Undergraduate Student',
   );
   return $positions;
 }

@@ -52,6 +52,7 @@
   <!-- Reorder <mads:related> child elements -->
   <xsl:template match="mads:related">
     <xsl:copy>
+      <xsl:copy-of select="@*"/>
       <xsl:apply-templates select="mads:name"/>
       <xsl:apply-templates select="mads:titleInfo"/>
       <xsl:apply-templates select="mads:topic"/> 
@@ -75,7 +76,15 @@
     <xsl:apply-templates select="mads:occupation"/>
     </xsl:copy>
   </xsl:template>
-  
+
+  <!-- Reorder <mads:name> child elements -->
+  <xsl:template match="mads:name">
+    <xsl:copy>
+      <xsl:copy-of select="@*"/>
+      <xsl:apply-templates select="mads:namePart"/>
+      <xsl:apply-templates select="mads:description"/>
+    </xsl:copy>
+  </xsl:template>
 
   <!-- Reorder <mads:affiliation> child elements -->
   <xsl:template match="mads:affiliation">

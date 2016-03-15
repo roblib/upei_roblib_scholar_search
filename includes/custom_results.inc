@@ -24,7 +24,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
    */
   public function printResults($solr_results) {
     $this->createCoinsUrlForResults($solr_results);
-    $this->createBookmarkAndTextLink($solr_results);
+    $this->customizeResults($solr_results);
     $solr_results = islandora_solr_prepare_solr_results($solr_results);
     $object_results = $solr_results['response']['objects'];
     $object_results = islandora_solr_prepare_solr_doc($object_results);
@@ -44,13 +44,14 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
   }
 
   /**
-   * Creates a bookmark form and a full text link.
+   * Adds and updates fields for UPEI customizations.
    *
-   * Currently checks the list of datastreams from solr to see if PDF exists to create the full text.
+   * Currently checks the list of datastreams from solr to see if PDF exists to create the full text,
+   * turns dois into links, adds the bookmark form to each result etc.
    *
    * @param array $solr_result
    */
-  function createBookmarkAndTextLink(&$solr_result) {
+  function customizeResults(&$solr_result) {
     // TODO We may want to make the base_url configurable in case we ever change resolvers.
     $results = &$solr_result['response']['objects'];
     foreach ($results as &$result) {
@@ -67,6 +68,11 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
       // we need to make the form ids unique, we then use hook_forms to map them to a real form id (because the form appears muliple times on one page).
       $bookmark_form = drupal_get_form('upei_roblib_scholar_search_bookmark_form_' . $id_for_form, $result['PID']);
       $result['roblib_bookmark_form'] = drupal_render($bookmark_form);
+      if(!empty($result['solr_doc']['mods_identifier_doi_s'])){
+        $doi = $result['solr_doc']['mods_identifier_doi_s'];
+        $result['solr_doc']['mods_identifier_doi_s'] =
+          l($doi, DOI_BASE_URL . $doi);
+      }
     }
   }
 
