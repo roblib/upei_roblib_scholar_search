@@ -144,6 +144,9 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
 
   static function createCoinsUrlForBook($result) {
     $options['query']['isbn'] = $result['solr_doc']['mods_relatedItem_host_identifier_isbn_s'];
+    if(empty($options['query']['isbn'])){
+      $options['query']['isbn'] = $result['solr_doc']['mods_identifier_isbn_s'];
+    }
     if (!empty($result['solr_doc']['mods_titleInfo_title_s'])) {
       $options['query']['title'] = $result['solr_doc']['mods_titleInfo_title_s'];
     }
