@@ -143,7 +143,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
   }
 
   static function createCoinsUrlForBook($result) {
-    $options['query']['isbn'] = $result['solr_doc']['mods_identifier_isbn_s'];
+    $options['query']['isbn'] = $result['solr_doc']['mods_relatedItem_host_identifier_isbn_s'];
     if (!empty($result['solr_doc']['mods_titleInfo_title_s'])) {
       $options['query']['title'] = $result['solr_doc']['mods_titleInfo_title_s'];
     }
@@ -154,8 +154,8 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
   }
 
   static function createCoinsUrlForJournalArticle($result) {
-    if (!empty($result['solr_doc']['mods_identifier_issn_s'])) {
-      $options['query']['issn'] = $result['solr_doc']['mods_identifier_issn_s'];
+    if (!empty($result['solr_doc']['mods_relatedItem_host_identifier_issn_s'])) {
+      $options['query']['issn'] = $result['solr_doc']['mods_relatedItem_host_identifier_issn_s'];
     }
     if (!empty($result['solr_doc']['mods_titleInfo_title_s'])) {
       $options['query']['atitle'] = $result['solr_doc']['mods_titleInfo_title_s'];
