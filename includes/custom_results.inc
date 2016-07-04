@@ -160,6 +160,9 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     if (!empty($result['solr_doc']['mods_relatedItem_host_identifier_issn_s'])) {
       $options['query']['issn'] = $result['solr_doc']['mods_relatedItem_host_identifier_issn_s'];
     }
+    if (!empty($result['solr_doc']['mods_identifier_issn_s'])) {
+      $options['query']['issn'] = $result['solr_doc']['mods_identifier_issn_s'];
+    }
     if (!empty($result['solr_doc']['mods_titleInfo_title_s'])) {
       $options['query']['atitle'] = $result['solr_doc']['mods_titleInfo_title_s'];
     }
