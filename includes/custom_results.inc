@@ -123,7 +123,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     foreach ($results as &$result) {
       $genre = empty($result['solr_doc']['mods_genre_s']) ? NULL : $result['solr_doc']['mods_genre_s'];
       if (!empty($genre) && !(in_array('PDF', $result['datastreams']))) {
-        if (stripos((string) $genre, 'book') !== FALSE && !empty($result['solr_doc']['mods_identifier_isbn_s'])) {
+        if (stripos((string) $genre, 'book') !== FALSE ) {
           $options = IslandoraSolrResultsCustom::createCoinsUrlForBook($result);
         }
         elseif ($genre == 'Journal Article') {
@@ -147,8 +147,15 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     if(empty($options['query']['isbn'])){
       $options['query']['isbn'] = $result['solr_doc']['mods_identifier_isbn_s'];
     }
-    if (!empty($result['solr_doc']['mods_titleInfo_title_s'])) {
-      $options['query']['title'] = $result['solr_doc']['mods_titleInfo_title_s'];
+    if (stripos((string) $result['solr_doc']['mods_genre_s'], 'chapter') > 0 ||
+      stripos((string) $result['solr_doc']['mods_genre_s'], 'section') > 0  ) {
+      if (!empty($result['solr_doc']['mods_relatedItem_host_titleInfo_title_s'])) {
+        $options['query']['title'] = $result['solr_doc']['mods_relatedItem_host_titleInfo_title_s'];
+      }
+    } else {
+      if (!empty($result['solr_doc']['mods_titleInfo_title_s'])) {
+        $options['query']['title'] = $result['solr_doc']['mods_titleInfo_title_s'];
+      }
     }
     if (!empty($result['solr_doc']['mods_part_extent_start_s'])) {
       $options['query']['spage'] = $result['solr_doc']['mods_part_extent_start_s'];
