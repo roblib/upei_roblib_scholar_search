@@ -10,6 +10,7 @@
  */
 
 ?>
+
 <?php if (empty($results)): ?>
   <p class="no-results"><?php print t('Sorry, but your search returned no results.'); ?></p>
 <?php else: ?>
@@ -23,6 +24,36 @@
           <dl class="solr-thumb">
             <dt>
               <?php print $result['thumbnail']; ?>
+
+          <!-- begin tooltip code -->
+
+<?php //pre/post-print tooltips 
+
+//convert to lowercase
+$pub_status = strtolower( $solr_fields['mods_physicalDescription_s']['value'][0] );
+$preprint = '<div class="tooltip-item">
+		<span class="pub_status"> Pre-print </span>
+		<i class="fa fa-question-circle" aria-hidden="true"></i>
+		<div class="tooltip">
+			<div class="tooltip-content">
+				"PRE-PRINT":<br> Authors Original Draft which is intended for Formal Publication, or already submitted for publication, but prior to the Accepted Work.
+			</div>
+		</div>
+		</div>';
+$postprint = '<div class="tooltip-item">
+		<span class="pub_status"> Post-print </span>
+		<i class="fa fa-question-circle" aria-hidden="true"></i>
+		<div class="tooltip">
+			<div class="tooltip-content">
+			"POST-PRINT":<br> A version after peer review and acceptance. The Accepted Work or the Definitive Work or a Minor Revision.
+			</div>
+		</div>
+		</div>';
+
+if ( $pub_status == 'pre-publication' || $pub_status == 'pre-print' ) { print $preprint; } 
+if ( $pub_status == 'post-publication' || $pub_status == 'post-print' ) { print $postprint; } 
+?>
+          <!-- end tooltip code -->
             </dt>
             <dd></dd>
             <dt class="solr-label roblib-coins">
