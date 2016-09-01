@@ -126,7 +126,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
         if (stripos((string) $genre, 'book') !== FALSE ) {
           $options = IslandoraSolrResultsCustom::createCoinsUrlForBook($result);
         }
-        elseif ($genre == 'Journal Article') {
+        elseif (strtolower($genre) == 'journal article') {
           $options = IslandoraSolrResultsCustom::createCoinsUrlForJournalArticle($result);
         }
         else {
@@ -151,10 +151,12 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
       stripos((string) $result['solr_doc']['mods_genre_s'], 'section') > 0  ) {
       if (!empty($result['solr_doc']['mods_relatedItem_host_titleInfo_title_s'])) {
         $options['query']['title'] = $result['solr_doc']['mods_relatedItem_host_titleInfo_title_s'];
+        $options['query']['genre'] = 'bookitem';
       }
     } else {
       if (!empty($result['solr_doc']['mods_titleInfo_title_s'])) {
         $options['query']['title'] = $result['solr_doc']['mods_titleInfo_title_s'];
+        $options['query']['genre'] = 'book';
       }
     }
     if (!empty($result['solr_doc']['mods_part_extent_start_s'])) {
@@ -167,6 +169,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     if (!empty($result['solr_doc']['mods_relatedItem_host_identifier_issn_s'])) {
       $options['query']['issn'] = $result['solr_doc']['mods_relatedItem_host_identifier_issn_s'];
     }
+    $options['query']['genre'] = 'article';
     if (!empty($result['solr_doc']['mods_identifier_issn_s'])) {
       $options['query']['issn'] = $result['solr_doc']['mods_identifier_issn_s'];
     }
