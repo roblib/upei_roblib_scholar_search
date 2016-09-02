@@ -43,6 +43,10 @@ function upei_roblib_scholar_search_theme() {
  *
  */
 function upei_roblib_scholar_search_preprocess_upei_roblib_scholar_search_custom(&$variables) {
+  if(module_exists('googleanalytics')) {
+    drupal_add_js('function sendBMEventToGoogle(category, label) {ga("send", "event", category, "Click", label);}',
+      array('type' => 'inline', 'scope' => 'header'));
+  }
   $results = $variables['results'];
   foreach ($results as $key => $result) {
     // Thumbnail.

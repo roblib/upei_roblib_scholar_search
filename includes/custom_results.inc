@@ -132,8 +132,13 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
         else {
           $options = IslandoraSolrResultsCustom::createCoinsUrlForOther($result);
         }
+        $attributes = array();
+        if(module_exists('googleanalytics')) {
+          $attributes = array('onclick' => "sendBMEventToGoogle('Search-Result-Bookmark', '" . $result['PID'] . "')");
+        }
         $options['query']['hold_tab_branch'] = 'PCU';
         $options['html'] = TRUE;
+        $options['attributes'] = $attributes;
         $result['coins_url'] = l($img, $coins_base_url, $options);
       }
       else {
