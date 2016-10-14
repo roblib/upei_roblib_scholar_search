@@ -139,7 +139,7 @@ function upei_roblib_scholar_search_process_islandora_solr_metadata_display(arra
   // Some custom tags for google scholar.
   if(module_exists('islandora_google_scholar')) {
     $tags = array();
-    if (!empty($variables['solr_field']['mods_part_extent_end_s'] &&
+    if (!empty($variables['solr_fields']['mods_part_extent_end_s'] &&
       !empty($variables['solr_fields']['mods_part_extent_end_s']['value'][0]))
     ) {
       $tags['citation_lastpage'] = reset($variables['solr_fields']['mods_part_extent_end_s']['value']);
