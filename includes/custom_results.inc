@@ -111,7 +111,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
    */
   static function createCoinsUrlForResults(&$solr_result) {
     // TODO We may want to make the base_url configurable in case we ever change resolvers.
-    $coins_base_url = 'http://articles.library.upei.ca:7888/godot/hold_tab.cgi';
+    $coins_base_url = 'http://resolver.ebscohost.com/openurl';
     $results = &$solr_result['response']['objects'];
     $img_variables = array(
       'path' => 'http://library.upei.ca/sites/all/files/sharedfolder/files/getit_upei.gif',
