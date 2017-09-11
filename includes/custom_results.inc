@@ -32,22 +32,23 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     $mod_path = drupal_get_path('module', 'islandora_solr_config');
     drupal_add_css("$mod_path/css/islandora_solr_config.theme.css");
 
-    $elements = array();
+    $elements = [];
     $elements['solr_total'] = $solr_results['response']['numFound'];
     $elements['solr_start'] = $solr_results['response']['start'];
 
 
-    return theme('upei_roblib_scholar_search_custom', array(
+    return theme('upei_roblib_scholar_search_custom', [
       'results' => $object_results,
       'elements' => $elements,
-    ));
+    ]);
   }
 
   /**
    * Adds and updates fields for UPEI customizations.
    *
-   * Currently checks the list of datastreams from solr to see if PDF exists to create the full text,
-   * turns dois into links, adds the bookmark form to each result etc.
+   * Currently checks the list of datastreams from solr to see if PDF exists to
+   * create the full text, turns dois into links, adds the bookmark form to
+   * each result etc.
    *
    * @param array $solr_result
    */
@@ -68,7 +69,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
       // we need to make the form ids unique, we then use hook_forms to map them to a real form id (because the form appears muliple times on one page).
       $bookmark_form = drupal_get_form('upei_roblib_scholar_search_bookmark_form_' . $id_for_form, $result['PID']);
       $result['roblib_bookmark_form'] = drupal_render($bookmark_form);
-      if(!empty($result['solr_doc']['mods_identifier_doi_s'])){
+      if (!empty($result['solr_doc']['mods_identifier_doi_s'])) {
         $doi = $result['solr_doc']['mods_identifier_doi_s'];
         $result['solr_doc']['mods_identifier_doi_s'] =
           l($doi, DOI_BASE_URL . $doi);
@@ -77,10 +78,12 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
   }
 
   /**
-   * Replace the comma separator between authors, advisors, creators etc with a semi colon.
+   * Replace the comma separator between authors, advisors, creators etc with a
+   * semi colon.
    *
    * This method may fail on records with authors that only have one name
-   * (missing lastname or missing firstname).  Names that have a comma in them may also cause issues.
+   * (missing lastname or missing firstname).  Names that have a comma in them
+   * may also cause issues.
    *
    * @param array $results
    */
@@ -102,28 +105,30 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
   /**
    * Creates a url based on coins specification.
    *
-   * We could use the citeproc converter to grab this data from mods but it will be expensive
-   * as it will involve a round trip to Fedora for every search result.  If we need to generate
-   * a citation for each search result we should use citeproc.  If not we should try to
-   * get the relevant information from the solr results (for now using solr results)
+   * We could use the citeproc converter to grab this data from mods but it
+   * will be expensive as it will involve a round trip to Fedora for every
+   * search result.  If we need to generate a citation for each search result
+   * we should use citeproc.  If not we should try to get the relevant
+   * information from the solr results (for now using solr results)
    *
    * @param $pid
    */
   static function createCoinsUrlForResults(&$solr_result) {
     // TODO We may want to make the base_url configurable in case we ever change resolvers.
+
     $coins_base_url = 'http://resolver.ebscohost.com/openurl';
     $results = &$solr_result['response']['objects'];
-    $img_variables = array(
+    $img_variables = [
       'path' => 'http://library.upei.ca/sites/all/files/sharedfolder/files/getit_upei.gif',
       'alt' => 'Get it at UPEI',
       'title' => 'Get it at UPEI',
-      'attributes' => array('class' => 'coins-img', ),
-      );
+      'attributes' => ['class' => 'coins-img',],
+    ];
     $img = theme('image', $img_variables);
     foreach ($results as &$result) {
       $genre = empty($result['solr_doc']['mods_genre_s']) ? NULL : $result['solr_doc']['mods_genre_s'];
       if (!empty($genre) && !(in_array('PDF', $result['datastreams']))) {
-        if (stripos((string) $genre, 'book') !== FALSE ) {
+        if (stripos((string) $genre, 'book') !== FALSE) {
           $options = IslandoraSolrResultsCustom::createCoinsUrlForBook($result);
         }
         elseif (strtolower($genre) == 'journal article') {
@@ -132,9 +137,9 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
         else {
           $options = IslandoraSolrResultsCustom::createCoinsUrlForOther($result);
         }
-        $attributes = array();
-        if(module_exists('googleanalytics') && !empty($result['PID'])) {
-          $attributes = array('onclick' => "sendBMEventToGoogle('Search-Result-Bookmark', '" . $result['PID'] . "')");
+        $attributes = [];
+        if (module_exists('googleanalytics') && !empty($result['PID'])) {
+          $attributes = ['onclick' => "sendBMEventToGoogle('Search-Result-Bookmark', '" . $result['PID'] . "')"];
         }
         $options['query']['hold_tab_branch'] = 'PCU';
         $options['html'] = TRUE;
@@ -149,35 +154,28 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
 
   static function createCoinsUrlForBook($result) {
     $options['query']['isbn'] = $result['solr_doc']['mods_relatedItem_host_identifier_isbn_s'];
-    if(empty($options['query']['isbn'])){
+    if (empty($options['query']['isbn'])) {
       $options['query']['isbn'] = $result['solr_doc']['mods_identifier_isbn_s'];
     }
     if (stripos((string) $result['solr_doc']['mods_genre_s'], 'chapter') > 0 ||
-      stripos((string) $result['solr_doc']['mods_genre_s'], 'section') > 0  ) {
+      stripos((string) $result['solr_doc']['mods_genre_s'], 'section') > 0) {
       if (!empty($result['solr_doc']['mods_relatedItem_host_titleInfo_title_s'])) {
         $options['query']['title'] = $result['solr_doc']['mods_relatedItem_host_titleInfo_title_s'];
         $options['query']['genre'] = 'bookitem';
       }
-    } else {
+    }
+    else {
       if (!empty($result['solr_doc']['mods_titleInfo_title_s'])) {
-        $options['query']['title'] = $result['solr_doc']['mods_titleInfo_title_s'];
+        $options['query']['title'] = $result['solr_doc']['pmods_titleInfo_title_s'];
         $options['query']['genre'] = 'book';
       }
     }
-    if (!empty($result['solr_doc']['mods_part_extent_start_s'])) {
-      $options['query']['spage'] = $result['solr_doc']['mods_part_extent_start_s'];
-    }
-    if (!empty($result['solr_doc']['mods_part_extent_end_s'])) {
-      $options['query']['epage'] = $result['solr_doc']['mods_part_extent_end_s'];
-    }
-    if(!empty($options['query']['spage']) && !empty($options['query']['epage'])) {
-      $options['query']['pages'] = $options['query']['spage'] . '-' . $options['query']['epage'];
-    }
+    IslandoraSolrResultsCustom::createPagesParameter($options, $result);
     if (!empty($result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'])) {
       $options['query']['date'] = $result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'];
     }
     if (!empty($result['solr_doc']['mods_author_lastname_first_ms'])) {
-      $options['query']['authors'] = $result['solr_doc']['mods_author_lastname_first_ms'];
+      $options['query']['authors'] = IslandoraSolrResultsCustom::substituteValueForComma($result['solr_doc']['mods_author_lastname_first_ms'], ' -- ');
     }
     return $options;
   }
@@ -202,19 +200,11 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     if (!empty($result['solr_doc']['mods_part_detail_issue_number_s'])) {
       $options['query']['issue'] = $result['solr_doc']['mods_part_detail_issue_number_s'];
     }
-    if (!empty($result['solr_doc']['mods_part_extent_start_s'])) {
-      $options['query']['spage'] = $result['solr_doc']['mods_part_extent_start_s'];
-    }
-    if (!empty($result['solr_doc']['mods_part_extent_end_s'])) {
-      $options['query']['epage'] = $result['solr_doc']['mods_part_extent_end_s'];
-    }
-    if(!empty($options['query']['spage']) && !empty($options['query']['epage'])) {
-      $options['query']['pages'] = $options['query']['spage'] . '-' . $options['query']['epage'];
-    }
+    IslandoraSolrResultsCustom::createPagesParameter($options, $result);
     if (!empty($result['solr_doc']['mods_identifier_doi_s'])) {
       $_doi = substr($result['solr_doc']['mods_identifier_doi_s'], 0, strlen('doi:')) === 'doi:' ? $result['solr_doc']['mods_identifier_doi_s']
         : 'doi:' . $result['solr_doc']['mods_identifier_doi_s'];
-      $options['query']['ID'] =  $_doi;
+      $options['query']['ID'] = $_doi;
     }
     if (!empty($result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'])) {
       $options['query']['date'] = $result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'];
@@ -223,7 +213,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
       $options['query']['date'] = $result['solr_doc']['mods_canonical_date_issued_s'];
     }
     if (!empty($result['solr_doc']['mods_author_lastname_first_ms'])) {
-      $options['query']['authors'] = $result['solr_doc']['mods_author_lastname_first_ms'];
+      $options['query']['authors'] = IslandoraSolrResultsCustom::substituteValueForComma($result['solr_doc']['mods_author_lastname_first_ms'], ' -- ');
     }
     return $options;
   }
@@ -242,7 +232,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
       $options['query']['title'] = $result['solr_doc']['mods_titleInfo_title_s'];
     }
     if (!empty($result['solr_doc']['mods_author_lastname_first_ms'])) {
-      $options['query']['authors'] = $result['solr_doc']['mods_author_lastname_first_ms'];
+      $options['query']['authors'] = IslandoraSolrResultsCustom::substituteValueForComma($result['solr_doc']['mods_author_lastname_first_ms'], ' -- ');
     }
     if (!empty($result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'])) {
       $options['query']['date'] = $result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'];
@@ -250,15 +240,35 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     if (!empty($result['solr_doc']['mods_canonical_date_issued_s'])) {
       $options['query']['date'] = $result['solr_doc']['mods_canonical_date_issued_s'];
     }
+    IslandoraSolrResultsCustom::createPagesParameter($options, $result);
+    return $options;
+  }
+
+  /**
+   * Replace every second comma in a string (subject) with the specified value ($value)
+   *
+   * @param string $subject
+   * @param string $value
+   *
+   * @return mixed
+   */
+  static function substituteValueForComma($subject, $value) {
+    return preg_replace('/(\w+,.*?\w),/', '$1' . $value, $subject);
+  }
+
+  static function createPagesParameter(&$options, $result) {
     if (!empty($result['solr_doc']['mods_part_extent_start_s'])) {
       $options['query']['spage'] = $result['solr_doc']['mods_part_extent_start_s'];
     }
     if (!empty($result['solr_doc']['mods_part_extent_end_s'])) {
       $options['query']['epage'] = $result['solr_doc']['mods_part_extent_end_s'];
     }
-    if(!empty($options['query']['spage']) && !empty($options['query']['epage'])) {
-      $options['query']['pages'] = $options['query']['spage'] . '-' . $options['query']['epage'];
+    if (!empty($options['query']['spage'])) {
+      $options['query']['pages'] = $options['query']['spage'];
     }
-    return $options;
+    if (!empty($options['query']['epage'])) {
+      $options['query']['pages'] .= ' - ' . $options['query']['epage'];
+    }
   }
+
 }
