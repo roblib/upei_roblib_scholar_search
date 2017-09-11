@@ -133,7 +133,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
           $options = IslandoraSolrResultsCustom::createCoinsUrlForOther($result);
         }
         $attributes = array();
-        if(module_exists('googleanalytics')) {
+        if(module_exists('googleanalytics') && !empty($result['PID'])) {
           $attributes = array('onclick' => "sendBMEventToGoogle('Search-Result-Bookmark', '" . $result['PID'] . "')");
         }
         $options['query']['hold_tab_branch'] = 'PCU';
@@ -167,6 +167,18 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     if (!empty($result['solr_doc']['mods_part_extent_start_s'])) {
       $options['query']['spage'] = $result['solr_doc']['mods_part_extent_start_s'];
     }
+    if (!empty($result['solr_doc']['mods_part_extent_end_s'])) {
+      $options['query']['epage'] = $result['solr_doc']['mods_part_extent_end_s'];
+    }
+    if(!empty($options['query']['spage']) && !empty($options['query']['epage'])) {
+      $options['query']['pages'] = $options['query']['spage'] . '-' . $options['query']['epage'];
+    }
+    if (!empty($result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'])) {
+      $options['query']['date'] = $result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'];
+    }
+    if (!empty($result['solr_doc']['mods_author_lastname_first_ms'])) {
+      $options['query']['authors'] = $result['solr_doc']['mods_author_lastname_first_ms'];
+    }
     return $options;
   }
 
@@ -193,6 +205,26 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     if (!empty($result['solr_doc']['mods_part_extent_start_s'])) {
       $options['query']['spage'] = $result['solr_doc']['mods_part_extent_start_s'];
     }
+    if (!empty($result['solr_doc']['mods_part_extent_end_s'])) {
+      $options['query']['epage'] = $result['solr_doc']['mods_part_extent_end_s'];
+    }
+    if(!empty($options['query']['spage']) && !empty($options['query']['epage'])) {
+      $options['query']['pages'] = $options['query']['spage'] . '-' . $options['query']['epage'];
+    }
+    if (!empty($result['solr_doc']['mods_identifier_doi_s'])) {
+      $_doi = substr($result['solr_doc']['mods_identifier_doi_s'], 0, strlen('doi:')) === 'doi:' ? $result['solr_doc']['mods_identifier_doi_s']
+        : 'doi:' . $result['solr_doc']['mods_identifier_doi_s'];
+      $options['query']['ID'] =  $_doi;
+    }
+    if (!empty($result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'])) {
+      $options['query']['date'] = $result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'];
+    }
+    if (!empty($result['solr_doc']['mods_canonical_date_issued_s'])) {
+      $options['query']['date'] = $result['solr_doc']['mods_canonical_date_issued_s'];
+    }
+    if (!empty($result['solr_doc']['mods_author_lastname_first_ms'])) {
+      $options['query']['authors'] = $result['solr_doc']['mods_author_lastname_first_ms'];
+    }
     return $options;
   }
 
@@ -208,6 +240,24 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     }
     if (!empty($result['solr_doc']['mods_titleInfo_title_s'])) {
       $options['query']['title'] = $result['solr_doc']['mods_titleInfo_title_s'];
+    }
+    if (!empty($result['solr_doc']['mods_author_lastname_first_ms'])) {
+      $options['query']['authors'] = $result['solr_doc']['mods_author_lastname_first_ms'];
+    }
+    if (!empty($result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'])) {
+      $options['query']['date'] = $result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'];
+    }
+    if (!empty($result['solr_doc']['mods_canonical_date_issued_s'])) {
+      $options['query']['date'] = $result['solr_doc']['mods_canonical_date_issued_s'];
+    }
+    if (!empty($result['solr_doc']['mods_part_extent_start_s'])) {
+      $options['query']['spage'] = $result['solr_doc']['mods_part_extent_start_s'];
+    }
+    if (!empty($result['solr_doc']['mods_part_extent_end_s'])) {
+      $options['query']['epage'] = $result['solr_doc']['mods_part_extent_end_s'];
+    }
+    if(!empty($options['query']['spage']) && !empty($options['query']['epage'])) {
+      $options['query']['pages'] = $options['query']['spage'] . '-' . $options['query']['epage'];
     }
     return $options;
   }
