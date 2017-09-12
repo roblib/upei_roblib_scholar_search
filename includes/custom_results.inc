@@ -23,12 +23,12 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
    *   Rendered Solr results.
    */
   public function printResults($solr_results) {
-    $this->createCoinsUrlForResults($solr_results);
+    self::createCoinsUrlForResults($solr_results);
     $this->customizeResults($solr_results);
     $solr_results = islandora_solr_prepare_solr_results($solr_results);
     $object_results = $solr_results['response']['objects'];
     $object_results = islandora_solr_prepare_solr_doc($object_results);
-    $this->replaceCommaWithSemicolon($object_results);
+    self::replaceCommaWithSemicolon($object_results);
     $mod_path = drupal_get_path('module', 'islandora_solr_config');
     drupal_add_css("$mod_path/css/islandora_solr_config.theme.css");
 
@@ -170,13 +170,11 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
         $options['query']['genre'] = 'book';
       }
     }
-    IslandoraSolrResultsCustom::createPagesParameter($options, $result);
+    self::createPagesParameter($options, $result);
     if (!empty($result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'])) {
       $options['query']['date'] = $result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'];
     }
-    if (!empty($result['solr_doc']['mods_author_lastname_first_ms'])) {
-      $options['query']['authors'] = IslandoraSolrResultsCustom::substituteValueForComma($result['solr_doc']['mods_author_lastname_first_ms'], ' -- ');
-    }
+    self::getAuthors($options, $result);
     return $options;
   }
 
@@ -200,7 +198,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     if (!empty($result['solr_doc']['mods_part_detail_issue_number_s'])) {
       $options['query']['issue'] = $result['solr_doc']['mods_part_detail_issue_number_s'];
     }
-    IslandoraSolrResultsCustom::createPagesParameter($options, $result);
+    self::createPagesParameter($options, $result);
     if (!empty($result['solr_doc']['mods_identifier_doi_s'])) {
       $_doi = substr($result['solr_doc']['mods_identifier_doi_s'], 0, strlen('doi:')) === 'doi:' ? $result['solr_doc']['mods_identifier_doi_s']
         : 'doi:' . $result['solr_doc']['mods_identifier_doi_s'];
@@ -212,9 +210,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     if (!empty($result['solr_doc']['mods_canonical_date_issued_s'])) {
       $options['query']['date'] = $result['solr_doc']['mods_canonical_date_issued_s'];
     }
-    if (!empty($result['solr_doc']['mods_author_lastname_first_ms'])) {
-      $options['query']['authors'] = IslandoraSolrResultsCustom::substituteValueForComma($result['solr_doc']['mods_author_lastname_first_ms'], ' -- ');
-    }
+    self::getAuthors($options, $result);
     return $options;
   }
 
@@ -231,17 +227,34 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     if (!empty($result['solr_doc']['mods_titleInfo_title_s'])) {
       $options['query']['title'] = $result['solr_doc']['mods_titleInfo_title_s'];
     }
-    if (!empty($result['solr_doc']['mods_author_lastname_first_ms'])) {
-      $options['query']['authors'] = IslandoraSolrResultsCustom::substituteValueForComma($result['solr_doc']['mods_author_lastname_first_ms'], ' -- ');
-    }
+    self::getAuthors($options, $result);
     if (!empty($result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'])) {
       $options['query']['date'] = $result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'];
     }
     if (!empty($result['solr_doc']['mods_canonical_date_issued_s'])) {
       $options['query']['date'] = $result['solr_doc']['mods_canonical_date_issued_s'];
     }
-    IslandoraSolrResultsCustom::createPagesParameter($options, $result);
+    self::createPagesParameter($options, $result);
     return $options;
+  }
+
+  /**
+   * Get the authors from the solr search results array.
+   *
+   * @param array $options
+   * @param array $result
+   */
+  static function getAuthors(&$options, $result) {
+    $authors = empty($result['solr_doc']['mods_author_lastname_first_ms']) ? $result['solr_doc']['mods_author_lastname_first_mt'] : $result['solr_doc']['mods_author_lastname_first_ms'];
+    if(empty($authors)) {
+      return;
+    }
+    //solr search supplys an array, metadata module will supply an string so check
+    if (is_array($authors)){
+      $options['query']['authors'] = implode(';', $authors);
+    } else {
+      $options['query']['authors'] = self::substituteValueForComma($authors, '; ');
+    }
   }
 
   /**
