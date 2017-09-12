@@ -166,7 +166,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     }
     else {
       if (!empty($result['solr_doc']['mods_titleInfo_title_s'])) {
-        $options['query']['title'] = $result['solr_doc']['pmods_titleInfo_title_s'];
+        $options['query']['title'] = $result['solr_doc']['mods_titleInfo_title_s'];
         $options['query']['genre'] = 'book';
       }
     }
