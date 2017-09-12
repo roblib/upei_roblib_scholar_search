@@ -162,6 +162,9 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
       if (!empty($result['solr_doc']['mods_relatedItem_host_titleInfo_title_s'])) {
         $options['query']['title'] = $result['solr_doc']['mods_relatedItem_host_titleInfo_title_s'];
         $options['query']['genre'] = 'bookitem';
+        if(!empty($result['solr_doc']['mods_titleInfo_title_s'])) {
+          $options['query']['atitle'] = $result['solr_doc']['mods_titleInfo_title_s'];
+        }
       }
     }
     else {
