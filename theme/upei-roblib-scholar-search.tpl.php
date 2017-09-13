@@ -30,7 +30,7 @@
 <?php //pre/post-print tooltips 
 
 //convert to lowercase
-$pub_status = strtolower( $solr_fields['mods_physicalDescription_s']['value'][0] );
+$pub_status = empty($solr_fields['mods_physicalDescription_s']['value'][0]) ? '' : strtolower( $solr_fields['mods_physicalDescription_s']['value'][0]);
 $preprint = '<div class="tooltip-item">
 		<span class="pub_status"> Pre-print </span>
 		<i class="fa fa-question-circle" aria-hidden="true"></i>
