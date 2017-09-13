@@ -149,10 +149,11 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
   }
 
   static function createCoinsUrlForBookOrConference($result) {
-    $options['query']['isbn'] = $result['solr_doc']['mods_relatedItem_host_identifier_isbn_s'];
-    if (empty($options['query']['isbn'])) {
-      $options['query']['isbn'] = $result['solr_doc']['mods_identifier_isbn_s'];
+    $isbn = empty($result['solr_doc']['mods_relatedItem_host_identifier_isbn_s']) ? '' : $result['solr_doc']['mods_relatedItem_host_identifier_isbn_s'];
+    if(empty($isbn)) {
+      $isbn = empty($result['solr_doc']['mods_identifier_isbn_s']) ? '' : $result['solr_doc']['mods_identifier_isbn_s'];
     }
+    $options['query']['isbn'] = $isbn;
     if (stripos((string) $result['solr_doc']['mods_genre_s'], 'chapter') !== FALSE ||
       stripos((string) $result['solr_doc']['mods_genre_s'], 'section') !== FALSE ||
       stripos((string) $result['solr_doc']['mods_genre_s'], 'conference') !== FALSE) {
