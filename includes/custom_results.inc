@@ -128,20 +128,19 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     foreach ($results as &$result) {
       $genre = empty($result['solr_doc']['mods_genre_s']) ? NULL : $result['solr_doc']['mods_genre_s'];
       if (!empty($genre) && !(in_array('PDF', $result['datastreams']))) {
-        if (stripos((string) $genre, 'book') !== FALSE) {
-          $options = IslandoraSolrResultsCustom::createCoinsUrlForBook($result);
+        if (stripos((string) $genre, 'book') !== FALSE || stripos((string) $genre, 'conference') !== FALSE) {
+          $options = self::createCoinsUrlForBookOrConference($result);
         }
         elseif (strtolower($genre) == 'journal article') {
-          $options = IslandoraSolrResultsCustom::createCoinsUrlForJournalArticle($result);
+          $options = self::createCoinsUrlForJournalArticle($result);
         }
         else {
-          $options = IslandoraSolrResultsCustom::createCoinsUrlForOther($result);
+          $options = self::createCoinsUrlForOther($result);
         }
         $attributes = [];
         if (module_exists('googleanalytics') && !empty($result['PID'])) {
           $attributes = ['onclick' => "sendBMEventToGoogle('Search-Result-Bookmark', '" . $result['PID'] . "')"];
         }
-        $options['query']['hold_tab_branch'] = 'PCU';
         $options['html'] = TRUE;
         $options['attributes'] = $attributes;
         $result['coins_url'] = l($img, $coins_base_url, $options);
@@ -152,16 +151,17 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     }
   }
 
-  static function createCoinsUrlForBook($result) {
+  static function createCoinsUrlForBookOrConference($result) {
     $options['query']['isbn'] = $result['solr_doc']['mods_relatedItem_host_identifier_isbn_s'];
     if (empty($options['query']['isbn'])) {
       $options['query']['isbn'] = $result['solr_doc']['mods_identifier_isbn_s'];
     }
-    if (stripos((string) $result['solr_doc']['mods_genre_s'], 'chapter') > 0 ||
-      stripos((string) $result['solr_doc']['mods_genre_s'], 'section') > 0) {
+    if (stripos((string) $result['solr_doc']['mods_genre_s'], 'chapter') !== FALSE ||
+      stripos((string) $result['solr_doc']['mods_genre_s'], 'section') !== FALSE ||
+      stripos((string) $result['solr_doc']['mods_genre_s'], 'conference') !== FALSE) {
       if (!empty($result['solr_doc']['mods_relatedItem_host_titleInfo_title_s'])) {
         $options['query']['title'] = $result['solr_doc']['mods_relatedItem_host_titleInfo_title_s'];
-        $options['query']['genre'] = 'bookitem';
+        $options['query']['genre'] = stripos((string) $result['solr_doc']['mods_genre_s'], 'conference') !== FALSE ? 'proceeding' : 'bookitem';
         if(!empty($result['solr_doc']['mods_titleInfo_title_s'])) {
           $options['query']['atitle'] = $result['solr_doc']['mods_titleInfo_title_s'];
         }
@@ -177,7 +177,11 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     if (!empty($result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'])) {
       $options['query']['date'] = $result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'];
     }
+    if (!empty($result['solr_doc']['mods_canonical_date_issued_s'])) {
+      $options['query']['date'] = $result['solr_doc']['mods_canonical_date_issued_s'];
+    }
     self::getAuthors($options, $result);
+    self::getDoiFromResult($options, $result);
     return $options;
   }
 
@@ -202,17 +206,14 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
       $options['query']['issue'] = $result['solr_doc']['mods_part_detail_issue_number_s'];
     }
     self::createPagesParameter($options, $result);
-    if (!empty($result['solr_doc']['mods_identifier_doi_s'])) {
-      $_doi = substr($result['solr_doc']['mods_identifier_doi_s'], 0, strlen('doi:')) === 'doi:' ? $result['solr_doc']['mods_identifier_doi_s']
-        : 'doi:' . $result['solr_doc']['mods_identifier_doi_s'];
-      $options['query']['ID'] = $_doi;
-    }
+
     if (!empty($result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'])) {
       $options['query']['date'] = $result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'];
     }
     if (!empty($result['solr_doc']['mods_canonical_date_issued_s'])) {
       $options['query']['date'] = $result['solr_doc']['mods_canonical_date_issued_s'];
     }
+    self::getDoiFromResult($options, $result);
     self::getAuthors($options, $result);
     return $options;
   }
@@ -228,7 +229,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
       $options['query']['stitle'] = $result['solr_doc']['mods_relatedItem_host_titleInfo_title_s'];
     }
     if (!empty($result['solr_doc']['mods_titleInfo_title_s'])) {
-      $options['query']['title'] = $result['solr_doc']['mods_titleInfo_title_s'];
+      $options['query']['atitle'] = $result['solr_doc']['mods_titleInfo_title_s'];
     }
     self::getAuthors($options, $result);
     if (!empty($result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'])) {
@@ -238,7 +239,16 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
       $options['query']['date'] = $result['solr_doc']['mods_canonical_date_issued_s'];
     }
     self::createPagesParameter($options, $result);
+    self::getDoiFromResult($options, $result);
     return $options;
+  }
+
+  static function getDoiFromResult(&$options, $result) {
+    if (!empty($result['solr_doc']['mods_identifier_doi_s'])) {
+      $_doi = substr($result['solr_doc']['mods_identifier_doi_s'], 0, strlen('doi:')) === 'doi:' ? $result['solr_doc']['mods_identifier_doi_s']
+        : 'doi:' . $result['solr_doc']['mods_identifier_doi_s'];
+      $options['query']['ID'] = $_doi;
+    }
   }
 
   /**
