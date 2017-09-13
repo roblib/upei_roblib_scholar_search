@@ -131,11 +131,8 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
         if (stripos((string) $genre, 'book') !== FALSE || stripos((string) $genre, 'conference') !== FALSE) {
           $options = self::createCoinsUrlForBookOrConference($result);
         }
-        elseif (strtolower($genre) == 'journal article') {
-          $options = self::createCoinsUrlForJournalArticle($result);
-        }
         else {
-          $options = self::createCoinsUrlForOther($result);
+          $options = self::createCoinsUrlForJournalArticle($result);
         }
         $attributes = [];
         if (module_exists('googleanalytics') && !empty($result['PID'])) {
@@ -215,31 +212,6 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     }
     self::getDoiFromResult($options, $result);
     self::getAuthors($options, $result);
-    return $options;
-  }
-
-  static function createCoinsUrlForOther($result) {
-    if (!empty($result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'])) {
-      $options['query']['date'] = $result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'];
-    }
-    if (!empty($result['solr_doc']['mods_genre_s'])) {
-      $options['query']['genre'] = $result['solr_doc']['mods_genre_s'];
-    }
-    if (!empty($result['solr_doc']['mods_relatedItem_host_titleInfo_title_s'])) {
-      $options['query']['stitle'] = $result['solr_doc']['mods_relatedItem_host_titleInfo_title_s'];
-    }
-    if (!empty($result['solr_doc']['mods_titleInfo_title_s'])) {
-      $options['query']['atitle'] = $result['solr_doc']['mods_titleInfo_title_s'];
-    }
-    self::getAuthors($options, $result);
-    if (!empty($result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'])) {
-      $options['query']['date'] = $result['solr_doc']['mods_relatedItem_host_originInfo_dateIssued_s'];
-    }
-    if (!empty($result['solr_doc']['mods_canonical_date_issued_s'])) {
-      $options['query']['date'] = $result['solr_doc']['mods_canonical_date_issued_s'];
-    }
-    self::createPagesParameter($options, $result);
-    self::getDoiFromResult($options, $result);
     return $options;
   }
 
