@@ -117,6 +117,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     // TODO We may want to make the base_url configurable in case we ever change resolvers.
 
     $coins_base_url = 'http://resolver.ebscohost.com/openurl';
+    $proxy_url = 'http://proxy.library.upei.ca/login?url=';
     $results = &$solr_result['response']['objects'];
     $img_variables = [
       'path' => 'http://library.upei.ca/sites/all/files/sharedfolder/files/getit_upei.gif',
@@ -139,8 +140,12 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
           $attributes = ['onclick' => "sendBMEventToGoogle('Search-Result-Bookmark', '" . $result['PID'] . "')"];
         }
         $options['html'] = TRUE;
-        $options['attributes'] = $attributes;
-        $result['coins_url'] = l($img, $coins_base_url, $options);
+        $url = url($coins_base_url, $options);
+        $proxy_options = array();
+        $proxy_options['attributes'] = $attributes;
+        $proxy_options['html'] = TRUE;
+        $proxy_options['attributes'] = $attributes;
+        $result['coins_url'] = l($img, $proxy_url . $url, $proxy_options);
       }
       else {
         $result['coins_url'] = '';
