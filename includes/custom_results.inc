@@ -120,7 +120,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
     $proxy_url = 'http://proxy.library.upei.ca/login?url=';
     $results = &$solr_result['response']['objects'];
     $img_variables = [
-      'path' => 'http://library.upei.ca/sites/all/files/sharedfolder/files/getit_upei.gif',
+      'path' => 'https://library.upei.ca/sites/all/files/sharedfolder/files/getit_upei.gif',
       'alt' => 'Get it at UPEI',
       'title' => 'Get it at UPEI',
       'attributes' => ['class' => 'coins-img',],
