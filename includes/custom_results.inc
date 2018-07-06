@@ -200,7 +200,7 @@ class IslandoraSolrResultsCustom extends IslandoraSolrResults {
       $options['query']['atitle'] = $result['solr_doc']['mods_titleInfo_title_s'];
     }
     if (!empty($result['solr_doc']['mods_relatedItem_host_titleInfo_title_s'])) {
-      $options['query']['stitle'] = $result['solr_doc']['mods_relatedItem_host_titleInfo_title_s'];
+      $options['query']['title'] = $result['solr_doc']['mods_relatedItem_host_titleInfo_title_s'];
     }
     if (!empty($result['solr_doc']['mods_part_detail_volume_number_s'])) {
       $options['query']['volume'] = $result['solr_doc']['mods_part_detail_volume_number_s'];
